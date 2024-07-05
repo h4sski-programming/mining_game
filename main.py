@@ -21,11 +21,10 @@ class Game():
                 self.running = False
         
         if self.mouse.get_pressed()[0]:
-            self.grid.update(self.mouse.get_pos())
+            self.grid.click_on(self.mouse.get_pos(), pygame.time.get_ticks())
     
     def update(self):
-        # self.grid.update(self.mouse.get_pos())
-        pass
+        self.grid.update(time=pygame.time.get_ticks())
     
     
     def draw(self):
@@ -42,6 +41,7 @@ class Game():
         
         # draw middle bar
         self.middle_bar.fill((20, 20, 20))
+        # self.middle_bar.fill((50, 200, 20))
         self.grid.draw(self.middle_bar)
         
         # draw bottom bar
