@@ -14,7 +14,7 @@ class Game():
         self.mouse = pygame.mouse
         
         self.player = Player(pygame.time.get_ticks())
-        self.grid = Grid()
+        self.grid = Grid(self.player)
     
     def events(self):
         for event in pygame.event.get():
@@ -25,7 +25,7 @@ class Game():
         self.grid.clicked(self.mouse.get_pos(), pygame.time.get_ticks())
     
     def update(self):
-        self.grid.update(time=pygame.time.get_ticks(), player=self.player)
+        self.grid.update(time=pygame.time.get_ticks())
         if pygame.time.get_ticks() > self.player.end_time:
             self.running = False
         self.player.end_time += self.grid.value_collected

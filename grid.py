@@ -5,32 +5,36 @@ from settings import *
 
 
 class Grid():
-    def __init__(self) -> None:
+    def __init__(self, player) -> None:
         self.cols = RESOLUTION[0] // GRID_CELL_SIZE
         self.rows = RESOLUTION[1] // GRID_CELL_SIZE
+        self.player = player
         self.generate_grid()
         self.value_collected = 0
+        self.revealing_cells = 1
     
     def generate_grid(self) -> None:
         self.grid_list = [ [Cell(col=c, row=r) for c in range(self.cols)] for r in range(self.rows) ]
     
     def clicked(self, mouse_pos: tuple[int], time: int) -> None:
         cell = self.get_cell_from_position(mouse_pos[0], mouse_pos[1]-TOP_BAR_HEIGHT)
+        if self.revealing_cells >= self.player.revealing_points:
+            return
+        # elif cell.revealed:
         cell.clicked(time)
     
-    def update(self, time: int, player) -> None:
+    def update(self, time: int) -> None:
         revealing_cells = 0
         for r in self.grid_list:
             for cell in r:
                 if cell.digged and cell.value>0:
-                    self.value_collected += cell.value
-                    cell.value = 0
+                    self.value_collected += cell.collect_value()
                 if cell.countingdown and not cell.revealed:
+                    # pass
                     revealing_cells += 1
-                if revealing_cells < player.revealing_points:
-                    # print(revealing_cells)
-                    pass
-                cell.update(time)
+                if revealing_cells < self.player.revealing_points:
+                    cell.update(time)
+        self.revealing_cells = revealing_cells
     
     def draw(self, surface) -> None:
         # cell.draw(surface) for cell in row for row in self.grid_list
@@ -42,7 +46,14 @@ class Grid():
         col = x // GRID_CELL_SIZE
         row = y // GRID_CELL_SIZE
         return self.grid_list[row][col]
-
+    
+    def get_number_revealing_cells(self) -> int:
+        ret = 0
+        for row in self.grid_list:
+            for cell in row:
+                if cell.countingdown and not cell.revealed:
+                    ret += 1
+        return ret
 
 ##################
 ### Cell class ###
@@ -100,7 +111,11 @@ class Cell():
                 self.stop_countdown = time + cell_types[self.type]['digging_time']
             else:
                 self.stop_countdown = time + 5_000
-        
+    
+    def collect_value(self) -> int:
+        v = self.value
+        self.value = 0
+        return v
 
 
 cell_types = {
@@ -108,24 +123,24 @@ cell_types = {
         'probability': 0.3,
         'color': (130, 130, 130),
         'digging_time': 5_000,
-        'value': 200,
+        'value': 800,
         },
     'granite': {
         'probability': 0.04,
         'color': (250, 50, 170),
         'digging_time': 25_000,
-        'value': 800,
+        'value': 2_400,
         },
     'marble': {
         'probability': 0.06,
         'color': (170, 250, 50),
         'digging_time': 15_000,
-        'value': 600,
+        'value': 1_800,
         },
     'diamond': {
         'probability': 0.001,
         'color': (50, 170, 250),
         'digging_time': 90_000,
-        'value': 2_000,
+        'value': 6_000,
         },
 }
